@@ -6,20 +6,6 @@
     android:layout_height="match_parent"
     tools:context="com.example.namnguyen.taskorganizer.MainActivity">
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/floatingActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:layout_marginRight="32dp"
-        android:clickable="true"
-        app:backgroundTint="@android:color/background_light"
-        app:fabSize="mini"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:srcCompat="@android:drawable/ic_input_add"
-        tools:layout_editor_absoluteY="336dp" />
-
     <ExpandableListView
         android:id="@+id/listView"
         android:layout_width="0dp"
@@ -30,5 +16,23 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="1.0" >
+
+    </ExpandableListView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:layout_marginRight="32dp"
+        android:clickable="true"
+        android:tint="@android:color/background_dark"
+        app:backgroundTint="@android:color/background_light"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:srcCompat="@android:drawable/ic_input_add"
+        tools:layout_editor_absoluteY="336dp" />
+
 </android.support.constraint.ConstraintLayout>
