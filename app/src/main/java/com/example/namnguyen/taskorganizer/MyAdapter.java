@@ -27,6 +27,14 @@ public class MyAdapter extends BaseExpandableListAdapter {
         this.child_items = child_items;
     }
 
+    public void addHeader(String header){
+        this.header.add(header);
+    }
+
+    public void addChild(String key, List<String>children){
+        this.child_items.put(key, children);
+    }
+
     @Override
     public int getGroupCount() {
         return header.size();
