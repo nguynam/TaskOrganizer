@@ -10,20 +10,19 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private int year;
@@ -32,16 +31,16 @@ public class MainActivity extends AppCompatActivity {
     private int hour;
     private int minute;
     private int deletePosition;
-    private String AM_PM;
     private String task;
     private String taskDescription;
+    private String date;
+    private String time;
 
-    static final int DATE_DIALOG_ID = 999;
-    static final int TIME_DIALOG_ID = 0;
+    DatePickerDialog datePickerDialog;
+    TimePickerDialog timePickerDialog;
 
     private ExpandableListView expandableListView;
     final List<String> headings = new ArrayList<>();
-//    List<String> childItems = new ArrayList<>();
     HashMap<String, List<String>> childList = new HashMap<>();
     final MyAdapter myAdapter = new MyAdapter(this, headings, childList);
     String heading;
@@ -78,10 +77,9 @@ public class MainActivity extends AppCompatActivity {
                         dialog.cancel();
                     }
                 });
-
         final AlertDialog alert11 = builder1.create();
 
-        expandableListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+        expandableListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 alert11.show();
@@ -96,11 +94,12 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
                 setCurrentDateOnView();
+
                 final Dialog dialog = new Dialog(MainActivity.this);
                 dialog.setContentView(R.layout.title_description_dialog);
+                Window window = dialog.getWindow();
+                window.setLayout(1000, 800);
                 dialog.show();
 
                 final EditText title = (EditText) dialog.findViewById(R.id.taskTitle);
@@ -115,7 +114,9 @@ public class MainActivity extends AppCompatActivity {
                         taskDescription = description.getText().toString();
                         child1 = "Description: " + taskDescription;
                         dialog.dismiss();
-                        showDialog(DATE_DIALOG_ID);
+                        datePickerDialog = new DatePickerDialog(MainActivity.this, datePickerListener, year, month, day);
+                        datePickerDialog.setButton(DatePickerDialog.BUTTON_NEGATIVE, "CANCEL", dateCancelListener);
+                        datePickerDialog.show();
                     }
                 });
 
@@ -138,19 +139,6 @@ public class MainActivity extends AppCompatActivity {
         minute = c.get(Calendar.MINUTE);
     }
 
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        switch (id) {
-            case DATE_DIALOG_ID:
-                // set date picker as current date
-                return new DatePickerDialog(this, datePickerListener,
-                        year, month, day);
-            case TIME_DIALOG_ID:
-                return new TimePickerDialog(this, timePickerListener, hour, minute, false);
-        }
-        return null;
-    }
-
     private DatePickerDialog.OnDateSetListener datePickerListener
             = new DatePickerDialog.OnDateSetListener() {
 
@@ -159,7 +147,8 @@ public class MainActivity extends AppCompatActivity {
             year = selectedYear;
             month = selectedMonth;
             day = selectedDay;
-            showDialog(TIME_DIALOG_ID);
+            timePickerDialog = new TimePickerDialog(MainActivity.this, timePickerListener, hour, minute, false);
+            timePickerDialog.show();
         }
     };
 
@@ -168,15 +157,32 @@ public class MainActivity extends AppCompatActivity {
         public void onTimeSet(TimePicker view, int hourOfDay, int minuteOfDay) {
             if (hourOfDay > 12) {
                 hour = hourOfDay - 12;
-                AM_PM = "PM";
             } else {
                 hour = hourOfDay;
-                AM_PM = "AM";
             }
             minute = minuteOfDay;
-            String time = String.format("%02d:%02d %s", hour, minute,
+            time = String.format(Locale.US, "%02d:%02d %s", hour, minute,
                     hourOfDay < 12 ? "AM" : "PM");
-            heading = task + "\n" + "Due: " + (month + 1) + "/" + day + "/" + year + " at " + time;
+            date = "\n" + (month + 1) + "/" + day + "/" + year;
+
+            heading = task + date + " at " + time;
+
+            List<String> childItems = new ArrayList<>();
+            childItems.add(child1);
+            childItems.add(child2);
+
+            myAdapter.addHeader(heading);
+            myAdapter.addChild(heading, childItems);
+            myAdapter.notifyDataSetChanged();
+        }
+    };
+
+    private DialogInterface.OnClickListener dateCancelListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            dialog.dismiss();
+            heading = task;
+
             List<String> childItems = new ArrayList<>();
             childItems.add(child1);
             childItems.add(child2);
