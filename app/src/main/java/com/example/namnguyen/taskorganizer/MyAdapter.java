@@ -35,6 +35,14 @@ public class MyAdapter extends BaseExpandableListAdapter {
         this.child_items.put(key, children);
     }
 
+    public void removeHeader(int position){
+        header.remove(position);
+    }
+
+    public void removeChildren(int position){
+        child_items.remove(header.get(position));
+    }
+
     @Override
     public int getGroupCount() {
         return header.size();
