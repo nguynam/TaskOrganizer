@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private int hour;
     private int minute;
     private int deletePosition;
+    private int reminder;
     private String task;
     private String taskDescription;
     private String date;
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
 
     DatePickerDialog datePickerDialog;
     TimePickerDialog timePickerDialog;
+    Dialog timeSpanDialog;
+
 
     private ExpandableListView expandableListView;
     final List<String> headings = new ArrayList<>();
@@ -167,16 +170,42 @@ public class MainActivity extends AppCompatActivity {
 
             heading = task + date + " at " + time;
 
+            //Create TimeSpan selection dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Set Reminder");
+            builder.setCancelable(true);
+            builder.setPositiveButton("Okay", timeSpanListener);
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    timeSpanDialog.dismiss();
+                }
+            });
+            builder.setSingleChoiceItems(R.array.time_spans, -1, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    String selected = getResources().getStringArray(R.array.time_spans)[i];
+                }
+            });
+            timeSpanDialog = builder.create();
+            timePickerDialog.dismiss();
+            timeSpanDialog.show();
+
+        }
+    };
+    private DialogInterface.OnClickListener timeSpanListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
             List<String> childItems = new ArrayList<>();
             childItems.add(child1);
             childItems.add(child2);
 
             myAdapter.addHeader(heading);
             myAdapter.addChild(heading, childItems);
+            //Add reminder
             myAdapter.notifyDataSetChanged();
         }
     };
-
     private DialogInterface.OnClickListener dateCancelListener = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int which) {

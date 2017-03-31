@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Task Organizer</string>
+    <string-array name="time_spans">
+        <item>At time of task</item>
+        <item>1 Hour Before</item>
+        <item>2 Hours Before</item>
+        <item>1 Day Before</item>
+        <item>2 Days Before</item>
+        <item>3 Days Before</item>
+        <item>4 Days Before</item>
+        <item>5 Days Before</item>
+        <item>6 Days Before</item>
+        <item>1 Week Before</item>
+        <item>2 Weeks Before</item>
+        <item>3 Weeks Before</item>
+        <item>3 Weeks Before</item>
+    </string-array>
 </resources>
