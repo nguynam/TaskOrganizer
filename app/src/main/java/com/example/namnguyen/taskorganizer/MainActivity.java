@@ -25,9 +25,12 @@ import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    private int year;
-    private int month;
-    private int day;
+    private int currentYear;
+    private int currentMonth;
+    private int currentDay;
+    private int selectedYear;
+    private int selectedMonth;
+    private int selectedDay;
     private int hour;
     private int minute;
     private int deletePosition;
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private String taskDescription;
     private String date;
     private String time;
+    private String address;
 
     DatePickerDialog datePickerDialog;
     TimePickerDialog timePickerDialog;
@@ -58,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         expandableListView.setAdapter(myAdapter);
         expandableListView.setChildDivider(getResources().getDrawable(R.color.transparent));
 
+        //Creates alert dialog for deleting a task
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
         builder1.setMessage("Delete this task?");
         builder1.setCancelable(true);
@@ -82,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 });
         final AlertDialog alert11 = builder1.create();
 
+        //Delete task on long press
         expandableListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -93,12 +99,59 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, final int groupPosition, final int childPosition, long id) {
+                if(childPosition == 0){
+                    final Dialog dialog = new Dialog(MainActivity.this);
+                    dialog.setContentView(R.layout.title_description_dialog);
+                    Window window = dialog.getWindow();
+                    window.setLayout(1000, 800);
+                    dialog.show();
+
+                    final EditText title = (EditText) dialog.findViewById(R.id.taskTitle);
+                    final EditText description = (EditText) dialog.findViewById(R.id.description);
+                    Button okButton = (Button) dialog.findViewById(R.id.ok);
+                    Button cancelButton = (Button) dialog.findViewById(R.id.cancel);
+
+                    String originalHeader = myAdapter.getHeader(groupPosition);
+                    String originalDescription = myAdapter.getChild(originalHeader, childPosition);
+
+                    title.setText(originalHeader);
+                    description.setText(originalDescription);
+
+                    okButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //Retrieves text from dialog
+                            String task = title.getText().toString();
+                            String taskDescription = description.getText().toString();
+                            myAdapter.addHeader(task, groupPosition);
+                            myAdapter.replaceChildItem(task, taskDescription, childPosition);
+                            myAdapter.notifyDataSetChanged();
+                            dialog.dismiss();
+                        }
+                    });
+
+                    cancelButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialog.cancel();
+                        }
+                    });
+                }
+                return false;
+            }
+        });
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setCurrentDateOnView();
+                //Get current date
+                setCurrentDate();
 
+                //Creates title/description dialog
                 final Dialog dialog = new Dialog(MainActivity.this);
                 dialog.setContentView(R.layout.title_description_dialog);
                 Window window = dialog.getWindow();
@@ -113,11 +166,14 @@ public class MainActivity extends AppCompatActivity {
                 okButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        //Retrieves text from dialog
                         task = title.getText().toString();
                         taskDescription = description.getText().toString();
-                        child1 = "Description: " + taskDescription;
+                        child1 = "Description: \n" + taskDescription;
                         dialog.dismiss();
-                        datePickerDialog = new DatePickerDialog(MainActivity.this, datePickerListener, year, month, day);
+
+                        //Instantiates datepicker and shows it
+                        datePickerDialog = new DatePickerDialog(MainActivity.this, datePickerListener, currentYear, currentMonth, currentDay);
                         datePickerDialog.setButton(DatePickerDialog.BUTTON_NEGATIVE, "CANCEL", dateCancelListener);
                         datePickerDialog.show();
                     }
@@ -133,28 +189,31 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setCurrentDateOnView() {
+    public void setCurrentDate() {
         Calendar c = Calendar.getInstance();
-        year = c.get(Calendar.YEAR);
-        month = c.get(Calendar.MONTH);
-        day = c.get(Calendar.DAY_OF_MONTH);
+        currentYear = c.get(Calendar.YEAR);
+        currentMonth = c.get(Calendar.MONTH);
+        currentDay = c.get(Calendar.DAY_OF_MONTH);
         hour = c.get(Calendar.HOUR);
         minute = c.get(Calendar.MINUTE);
     }
 
+    //Retrieve date information when "OK" button is pressed
     private DatePickerDialog.OnDateSetListener datePickerListener
             = new DatePickerDialog.OnDateSetListener() {
 
-        public void onDateSet(DatePicker view, int selectedYear,
-                              int selectedMonth, int selectedDay) {
-            year = selectedYear;
-            month = selectedMonth;
-            day = selectedDay;
+        public void onDateSet(DatePicker view, int Year,
+                              int Month, int Day) {
+            selectedYear = Year;
+            selectedMonth = Month;
+            selectedDay = Day;
+
             timePickerDialog = new TimePickerDialog(MainActivity.this, timePickerListener, hour, minute, false);
             timePickerDialog.show();
         }
     };
 
+    //Set time
     private TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minuteOfDay) {
@@ -166,9 +225,6 @@ public class MainActivity extends AppCompatActivity {
             minute = minuteOfDay;
             time = String.format(Locale.US, "%02d:%02d %s", hour, minute,
                     hourOfDay < 12 ? "AM" : "PM");
-            date = "\n" + (month + 1) + "/" + day + "/" + year;
-
-            heading = task + date + " at " + time;
 
             //Create TimeSpan selection dialog
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -196,14 +252,25 @@ public class MainActivity extends AppCompatActivity {
     private DialogInterface.OnClickListener timeSpanListener = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialogInterface, int i) {
+            if(currentDay == selectedDay && currentMonth == selectedMonth){
+                date = "\nToday";
+            }
+            else if(selectedDay == currentDay+1 && currentMonth == selectedMonth || (currentDay == 30 || currentDay == 31) && selectedDay == 1){
+                date = "\nTomorrow";
+            }
+            else{
+                date = "\n" + (selectedMonth + 1) + "/" + selectedDay + "/" + selectedYear;
+            }
+
+            heading = task + date + " at " + time;
+
             List<String> childItems = new ArrayList<>();
             childItems.add(child1);
             childItems.add(child2);
 
-            myAdapter.addHeader(heading);
+            myAdapter.addHeader(heading, -1);
             myAdapter.addChild(heading, childItems);
-            //Add reminder
-            myAdapter.notifyDataSetChanged();
+            myAdapter.notifyDataSetChanged();;
         }
     };
     private DialogInterface.OnClickListener dateCancelListener = new DialogInterface.OnClickListener() {
@@ -212,11 +279,12 @@ public class MainActivity extends AppCompatActivity {
             dialog.dismiss();
             heading = task;
 
+            //Adds all information to array and pass it to the adapter
             List<String> childItems = new ArrayList<>();
             childItems.add(child1);
             childItems.add(child2);
 
-            myAdapter.addHeader(heading);
+            myAdapter.addHeader(heading, -1);
             myAdapter.addChild(heading, childItems);
             myAdapter.notifyDataSetChanged();
         }
