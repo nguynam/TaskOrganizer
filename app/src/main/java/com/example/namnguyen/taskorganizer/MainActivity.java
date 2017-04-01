@@ -1,9 +1,15 @@
 package com.example.namnguyen.taskorganizer;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -270,7 +276,8 @@ public class MainActivity extends AppCompatActivity {
 
             myAdapter.addHeader(heading, -1);
             myAdapter.addChild(heading, childItems);
-            myAdapter.notifyDataSetChanged();;
+            myAdapter.notifyDataSetChanged();
+            scheduleNotification("Reminder: " + heading,heading + " is coming up soon", 500);
         }
     };
     private DialogInterface.OnClickListener dateCancelListener = new DialogInterface.OnClickListener() {
@@ -289,4 +296,24 @@ public class MainActivity extends AppCompatActivity {
             myAdapter.notifyDataSetChanged();
         }
     };
+    private void scheduleNotification(String title, String message, int delay) {
+        //Build notification
+        Notification.Builder builder = new Notification.Builder(this);
+        builder.setContentTitle(title);
+        builder.setContentText(message);
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        builder.setPriority(Notification.PRIORITY_HIGH);
+        builder.setDefaults(Notification.DEFAULT_ALL);
+        Notification notification = builder.build();
+
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
+        //TODO Research id relevance
+        notificationIntent.putExtra("notification-id", 1);
+        notificationIntent.putExtra("notification", notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        notification.contentIntent = pendingIntent;
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
+    }
 }
