@@ -17,6 +17,9 @@
             </intent-filter>
         </activity>
         <receiver android:name=".NotificationPublisher" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDW8kTdif8HoDl90VAzDv0aVcqNR3yO7G0" />
     </application>
 
 </manifest>
