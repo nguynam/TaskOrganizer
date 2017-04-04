@@ -30,7 +30,7 @@
         android:clickable="true"
         android:tint="@android:color/background_dark"
         app:backgroundTint="@android:color/background_light"
-        app:fabSize="mini"
+        app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:srcCompat="@android:drawable/ic_input_add"
