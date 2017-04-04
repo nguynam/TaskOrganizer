@@ -9,6 +9,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -68,13 +69,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     final List<String> headings = new ArrayList<>();
     HashMap<String, List<String>> childList = new HashMap<>();
 
-    final List<String> thisHeadings = new ArrayList<>();
-    HashMap<String, List<String>> thisChildList = new HashMap<>();
-
     final MyAdapter myAdapter = new MyAdapter(this, headings, childList);
     String heading;
-    String child1;
-    String child2 = "\nAdd Location?";
+    String child1 = "Add Description";
+    String child2 = "\nAdd Location";
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -94,9 +92,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     myAdapter.addHeader(heading, -1);
                     myAdapter.addChild(heading, childItems);
                     myAdapter.notifyDataSetChanged();
+                    scheduleNotification("Reminder: " + heading, heading + " is due soon",500);
                 }
             }
-            scheduleNotification("Reminder: " + heading, heading + " is due soon",500);
         }
     }
 
@@ -137,17 +135,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                         dialog.cancel();
                     }
                 });
-        final AlertDialog alert11 = builder1.create();
+        final AlertDialog deleteDialog = builder1.create();
 
         //Delete task on long press
         expandableListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                alert11.show();
-                deletePosition = position;
-                Snackbar.make(view, "Position: " + position, Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                return false;
+                long packedPosition = expandableListView.getExpandableListPosition(position);
+                int itemType = ExpandableListView.getPackedPositionType(packedPosition);
+                int groupPosition = ExpandableListView.getPackedPositionGroup(packedPosition);
+                int childPosition = ExpandableListView.getPackedPositionChild(packedPosition);
+
+                if (itemType == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+                    deleteDialog.show();
+                    deletePosition = position;
+                    Snackbar.make(view, "GroupPosition: " + groupPosition, Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                }
+                else if (itemType == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+                    Snackbar.make(view, "ChildPosition: " + childPosition, Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+
+                    if (childPosition == 1){
+                        String addressSplit [] = address.split("\n");
+                        Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+                                Uri.parse("http://maps.google.co.in/maps?q=" + addressSplit[2]));
+                        startActivity(intent);
+                    }
+                }
+                return true;
             }
         });
 
@@ -177,14 +193,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     final String descriptionSplit[] = originalDescription.split("\n");
 
                     title.setText(headerSplit[0]);
-                    description.setText(descriptionSplit[1]);
+
+                    if(originalDescription.equals("Add Description")){
+                        description.setText("");
+                    }
+                    else{
+                        description.setText(descriptionSplit[1]);
+                    }
 
                     okButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             //Retrieves text from dialog and update lists
-                            String task = title.getText().toString() + "\n" + headerSplit[1];
-                            String taskDescription = descriptionSplit[0] + "\n" + description.getText().toString();
+                            String task;
+                            if(headerSplit.length == 1){
+                                task = title.getText().toString();
+                            }
+                            else{
+                                task = title.getText().toString() + "\n" + headerSplit[1];
+                            }
+                            String taskDescription = "Description:" + "\n" + description.getText().toString();
                             myAdapter.addHeader(task, groupPosition);
                             myAdapter.replaceChildItem(task, taskDescription, childPosition);
                             myAdapter.notifyDataSetChanged();
@@ -217,6 +245,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         });
 
+        //Add Task
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -240,14 +269,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     @Override
                     public void onClick(View v) {
                         //Retrieves text from dialog
-                        List<String> temp = new ArrayList<String>();
                         task = title.getText().toString();
-                        thisHeadings.add(task);
                         taskDescription = description.getText().toString();
-                        temp.add(taskDescription);
-                        thisChildList.put(task, temp);
-
-                        child1 = "Description: \n" + taskDescription;
+                        if(taskDescription.isEmpty()){
+                            child1 = "Add Description";
+                        }
+                        else{
+                            child1 = "Description: \n" + taskDescription;
+                        }
                         dialog.dismiss();
 
                         //Instantiates datepicker and shows it
@@ -267,6 +296,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         });
     }
 
+    //Set date to today's date
     public void setCurrentDate() {
         Calendar c = Calendar.getInstance();
         currentYear = c.get(Calendar.YEAR);
@@ -380,6 +410,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             googleDialog.show();
         }
     };
+
+    //If cancel button is pressed
     private DialogInterface.OnClickListener dateCancelListener = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int which) {
