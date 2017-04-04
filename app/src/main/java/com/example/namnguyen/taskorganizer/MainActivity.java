@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     DatePickerDialog datePickerDialog;
     TimePickerDialog timePickerDialog;
     Dialog timeSpanDialog;
+    Dialog googleDialog;
 
     private ExpandableListView expandableListView;
     final List<String> headings = new ArrayList<>();
@@ -323,7 +324,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             timeSpanDialog = builder.create();
             timePickerDialog.dismiss();
             timeSpanDialog.show();
-
         }
     };
     private DialogInterface.OnClickListener timeSpanListener = new DialogInterface.OnClickListener() {
@@ -338,48 +338,46 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
 
             heading = task + date + " at " + time;
-
-            final Dialog dialog = new Dialog(MainActivity.this);
-            dialog.setContentView(R.layout.google_places_picker);
-            Window window = dialog.getWindow();
-            window.setLayout(700, 500);
-            dialog.show();
             changingData = false;
 
-            Button okButton = (Button) dialog.findViewById(R.id.locationYes);
-            Button cancelButton = (Button) dialog.findViewById(R.id.locationNo);
+            AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
+            builder1.setMessage("Add a location for this task?");
+            builder1.setCancelable(true);
+            builder1.setPositiveButton(
+                    "Yes",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            try {
+                                Intent intent =
+                                        new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+                                                .build(MainActivity.this);
+                                startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                            } catch (GooglePlayServicesRepairableException e) {
+                                e.printStackTrace();
+                            } catch (GooglePlayServicesNotAvailableException e) {
+                                e.printStackTrace();
+                            }
+                            googleDialog.dismiss();
+                        }
+                    });
 
-            okButton.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View v) {
-                    try {
-                        Intent intent =
-                                new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
-                                        .build(MainActivity.this);
-                        startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-                    } catch (GooglePlayServicesRepairableException e) {
-                        e.printStackTrace();
-                    } catch (GooglePlayServicesNotAvailableException e) {
-                        e.printStackTrace();
-                    }
-                    dialog.dismiss();
-                }
-            });
+            builder1.setNegativeButton(
+                    "No",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            List<String> childItems = new ArrayList<>();
+                            childItems.add(child1);
+                            childItems.add(child2);
 
-            cancelButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    List<String> childItems = new ArrayList<>();
-                    childItems.add(child1);
-                    childItems.add(child2);
-
-                    myAdapter.addHeader(heading, -1);
-                    myAdapter.addChild(heading, childItems);
-                    myAdapter.notifyDataSetChanged();
-                    scheduleNotification("Reminder: " + heading, heading + " is due soon",500);
-                    dialog.dismiss();
-                }
-            });
+                            myAdapter.addHeader(heading, -1);
+                            myAdapter.addChild(heading, childItems);
+                            myAdapter.notifyDataSetChanged();
+                            googleDialog.dismiss();
+                            scheduleNotification("Reminder: " + heading, heading + " is due soon",500);
+                        }
+                    });
+            googleDialog = builder1.create();
+            googleDialog.show();
         }
     };
     private DialogInterface.OnClickListener dateCancelListener = new DialogInterface.OnClickListener() {
