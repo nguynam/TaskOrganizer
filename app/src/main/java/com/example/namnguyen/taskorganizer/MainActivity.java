@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     myAdapter.notifyDataSetChanged();
                 }
             }
+            scheduleNotification("Reminder: " + heading, heading + " is due soon",500);
         }
     }
 
@@ -375,10 +376,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     myAdapter.addHeader(heading, -1);
                     myAdapter.addChild(heading, childItems);
                     myAdapter.notifyDataSetChanged();
+                    scheduleNotification("Reminder: " + heading, heading + " is due soon",500);
                     dialog.dismiss();
                 }
             });
-            scheduleNotification("Reminder: " + heading, heading + " is coming up soon", 500);
         }
     };
     private DialogInterface.OnClickListener dateCancelListener = new DialogInterface.OnClickListener() {
