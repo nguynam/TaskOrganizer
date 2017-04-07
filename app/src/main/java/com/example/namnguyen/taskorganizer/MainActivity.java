@@ -18,6 +18,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -43,14 +44,9 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
 
-    private int currentYear;
-    private int currentMonth;
-    private int currentDay;
-    private int selectedYear;
-    private int selectedMonth;
-    private int selectedDay;
-    private int hour;
-    private int minute;
+    private int currentYear, currentMonth, currentDay;
+    private int selectedYear, selectedMonth, selectedDay;
+    private int hour, minute;
     private int deletePosition;
     private int reminder;
     private String task;
@@ -179,12 +175,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     dialog.setContentView(R.layout.title_description_dialog);
                     Window window = dialog.getWindow();
                     window.setLayout(1000, 800);
-                    dialog.show();
 
+                    //Attach all of the buttons and text fields
                     final EditText title = (EditText) dialog.findViewById(R.id.taskTitle);
                     final EditText description = (EditText) dialog.findViewById(R.id.description);
-                    Button okButton = (Button) dialog.findViewById(R.id.ok);
-                    Button cancelButton = (Button) dialog.findViewById(R.id.cancel);
+                    Button okButton = (Button) dialog.findViewById(R.id.title_description_next);
+                    Button finishButton = (Button)dialog.findViewById(R.id.title_description_finish);
+                    Button cancelButton = (Button) dialog.findViewById(R.id.title_description_cancel);
+
+                    //Delete one of the buttons because it is not needed in this case
+                    ViewGroup layout = (ViewGroup)finishButton.getParent();
+                    layout.removeView(finishButton);
+                    okButton.setText("FINISH");
+                    dialog.show();
 
                     //Retrieve original header and description
                     String originalHeader = myAdapter.getHeader(groupPosition);
@@ -262,10 +265,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
                 final EditText title = (EditText) dialog.findViewById(R.id.taskTitle);
                 final EditText description = (EditText) dialog.findViewById(R.id.description);
-                Button okButton = (Button) dialog.findViewById(R.id.ok);
-                Button cancelButton = (Button) dialog.findViewById(R.id.cancel);
+                Button nextButton = (Button) dialog.findViewById(R.id.title_description_next);
+                Button cancelButton = (Button) dialog.findViewById(R.id.title_description_cancel);
+                Button finishButton = (Button) dialog.findViewById(R.id.title_description_finish);
 
-                okButton.setOnClickListener(new View.OnClickListener() {
+                nextButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         //Retrieves text from dialog
@@ -283,6 +287,31 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                         datePickerDialog = new DatePickerDialog(MainActivity.this, datePickerListener, currentYear, currentMonth, currentDay);
                         datePickerDialog.setButton(DatePickerDialog.BUTTON_NEGATIVE, "CANCEL", dateCancelListener);
                         datePickerDialog.show();
+                    }
+                });
+
+                finishButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        task = title.getText().toString();
+                        taskDescription = description.getText().toString();
+                        if(taskDescription.isEmpty()){
+                            child1 = "Add Description";
+                        }
+                        else{
+                            child1 = "Description: \n" + taskDescription;
+                        }
+                        dialog.dismiss();
+                        heading = task;
+
+                        //Adds all information to array and pass it to the adapter
+                        List<String> childItems = new ArrayList<>();
+                        childItems.add(child1);
+                        childItems.add(child2);
+
+                        myAdapter.addHeader(heading, -1);
+                        myAdapter.addChild(heading, childItems);
+                        myAdapter.notifyDataSetChanged();
                     }
                 });
 

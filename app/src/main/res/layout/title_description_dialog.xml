@@ -32,23 +32,30 @@
         android:layout_alignParentStart="true">
 
         <Button
-            android:id="@+id/cancel"
+            android:id="@+id/title_description_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/ok"
-            android:layout_alignBottom="@+id/ok"
-            android:layout_toStartOf="@+id/ok"
+            android:layout_alignBaseline="@+id/title_description_next"
+            android:layout_alignBottom="@+id/title_description_next"
+            android:layout_toStartOf="@+id/title_description_next"
             android:layout_weight="1"
             android:text="Cancel" />
 
         <Button
-            android:id="@+id/ok"
+            android:id="@+id/title_description_next"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_below="@+id/description"
             android:layout_weight="1"
-            android:text="OK" />
+            android:text="NEXT" />
+
+        <Button
+            android:id="@+id/title_description_finish"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="FINISH" />
     </TableRow>
 
 </RelativeLayout>
