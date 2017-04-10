@@ -6,7 +6,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListAdapter;
 import android.widget.TextView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +25,24 @@ import java.util.List;
 
 
 public class MyAdapter extends BaseExpandableListAdapter {
+    // Write a message to the database
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference firebaseListWrapper = database.getReference("userTasks");
+    ExpandableListWrapper listWrapper = new ExpandableListWrapper();
+    ValueEventListener firebaseListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            GenericTypeIndicator<ExpandableListWrapper> t = new GenericTypeIndicator<ExpandableListWrapper>() {};
+            listWrapper = dataSnapshot.getValue(t);
+            header = listWrapper.getHeaders();
+            child_items = listWrapper.decodeChildren();
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
     private List<String> header;
     private HashMap<String, List<String>> child_items;
     private Context ctx;
@@ -25,6 +51,7 @@ public class MyAdapter extends BaseExpandableListAdapter {
         this.ctx = ctx;
         this.header = header;
         this.child_items = child_items;
+        firebaseListWrapper.addValueEventListener(firebaseListener);
     }
 
     public void addHeader(String header, int position) {
@@ -69,7 +96,13 @@ public class MyAdapter extends BaseExpandableListAdapter {
     public void removeChildren(int position) {
         child_items.remove(header.get(position));
     }
-
+    @Override
+    public void notifyDataSetChanged(){
+        listWrapper.setHeaders(header);
+        listWrapper.encodeChildren(child_items);
+        firebaseListWrapper.setValue(listWrapper);
+        super.notifyDataSetChanged();
+    }
     @Override
     public int getGroupCount() {
         return header.size();
@@ -104,7 +137,6 @@ public class MyAdapter extends BaseExpandableListAdapter {
     public boolean hasStableIds() {
         return false;
     }
-
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         String header = (String) this.getGroup(groupPosition);
