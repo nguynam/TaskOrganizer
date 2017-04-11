@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListAdapter;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -33,9 +34,12 @@ public class MyAdapter extends BaseExpandableListAdapter {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             GenericTypeIndicator<ExpandableListWrapper> t = new GenericTypeIndicator<ExpandableListWrapper>() {};
-            listWrapper = dataSnapshot.getValue(t);
+            if(dataSnapshot.exists()){
+                listWrapper = dataSnapshot.getValue(t);
+            }
             header = listWrapper.getHeaders();
             child_items = listWrapper.decodeChildren();
+            MyAdapter.super.notifyDataSetChanged();
         }
 
         @Override
@@ -48,10 +52,11 @@ public class MyAdapter extends BaseExpandableListAdapter {
     private Context ctx;
 
     MyAdapter(Context ctx, List<String> header, HashMap<String, List<String>> child_items) {
+        firebaseListWrapper.addValueEventListener(firebaseListener);
         this.ctx = ctx;
         this.header = header;
         this.child_items = child_items;
-        firebaseListWrapper.addValueEventListener(firebaseListener);
+        ExpandableListWrapper wrapper = new ExpandableListWrapper();
     }
 
     public void addHeader(String header, int position) {
