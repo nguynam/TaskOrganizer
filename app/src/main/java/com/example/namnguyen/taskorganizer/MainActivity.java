@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private int currentYear, currentMonth, currentDay;
     private int selectedYear, selectedMonth, selectedDay;
     private int hour, minute;
+    private long millisecondsUntilReminder;
     private int deletePosition;
     private int reminder;
     private String task;
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     DatePickerDialog datePickerDialog;
     TimePickerDialog timePickerDialog;
-    Dialog timeSpanDialog;
+    Dialog reminderDialog;
     Dialog googleDialog;
 
     private ExpandableListView expandableListView;
@@ -88,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     myAdapter.addHeader(heading, -1);
                     myAdapter.addChild(heading, childItems);
                     myAdapter.notifyDataSetChanged();
-                    scheduleNotification("Reminder: " + heading, heading + " is due soon",500);
+                    scheduleNotification("Reminder: " + heading, heading + " is due soon",millisecondsUntilReminder);
                 }
             }
         }
@@ -355,38 +356,48 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minuteOfDay) {
+            hour = hourOfDay;
+            //Update formattedHour to for display
+            int formattedHour;
             if (hourOfDay > 12) {
-                hour = hourOfDay - 12;
+                formattedHour = hourOfDay - 12;
             } else {
-                hour = hourOfDay;
+                formattedHour = hourOfDay;
             }
             minute = minuteOfDay;
-            time = String.format(Locale.US, "%02d:%02d %s", hour, minute,
+            time = String.format(Locale.US, "%02d:%02d %s", formattedHour, minute,
                     hourOfDay < 12 ? "AM" : "PM");
 
             //Create TimeSpan selection dialog
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setTitle("Set Reminder");
             builder.setCancelable(true);
-            builder.setPositiveButton("Okay", timeSpanListener);
+            builder.setPositiveButton("Okay", reminderListener);
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    timeSpanDialog.dismiss();
+                    reminderDialog.dismiss();
                 }
             });
-            builder.setSingleChoiceItems(R.array.time_spans, -1, new DialogInterface.OnClickListener() {
+            builder.setSingleChoiceItems(R.array.reminder_time_spans, -1, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    String selected = getResources().getStringArray(R.array.time_spans)[i];
+                    String selected = getResources().getStringArray(R.array.reminder_time_spans)[i];
+                    int selectedTimeSeconds = getResources().getIntArray(R.array.reminder_time_seconds)[i];
+                    Calendar reminderTime = Calendar.getInstance();
+                    reminderTime.set(selectedYear,selectedMonth,selectedDay,hour,minute);
+                    //Subtract selected reminder seconds from selected date/time
+                    reminderTime.add(Calendar.SECOND,0-selectedTimeSeconds);
+                    Calendar currentTime = Calendar.getInstance();
+                    millisecondsUntilReminder = (reminderTime.getTimeInMillis() - currentTime.getTimeInMillis());
                 }
             });
-            timeSpanDialog = builder.create();
+            reminderDialog = builder.create();
             timePickerDialog.dismiss();
-            timeSpanDialog.show();
+            reminderDialog.show();
         }
     };
-    private DialogInterface.OnClickListener timeSpanListener = new DialogInterface.OnClickListener() {
+    private DialogInterface.OnClickListener reminderListener = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialogInterface, int i) {
             if (currentDay == selectedDay && currentMonth == selectedMonth) {
@@ -433,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             myAdapter.addChild(heading, childItems);
                             myAdapter.notifyDataSetChanged();
                             googleDialog.dismiss();
-                            scheduleNotification("Reminder: " + heading, heading + " is due soon",500);
+                            scheduleNotification("Reminder: " + heading, heading + " is due soon",millisecondsUntilReminder);
                         }
                     });
             googleDialog = builder1.create();
@@ -459,7 +470,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
     };
 
-    private void scheduleNotification(String title, String message, int delay) {
+    private void scheduleNotification(String title, String message, long millisecondsFromNow) {
         //Build notification
         Notification.Builder builder = new Notification.Builder(this);
         builder.setContentTitle(title);
@@ -475,7 +486,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         notificationIntent.putExtra("notification", notification);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         notification.contentIntent = pendingIntent;
-        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        long futureInMillis = SystemClock.elapsedRealtime() + millisecondsFromNow;
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
     }

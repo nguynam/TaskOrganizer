@@ -1,9 +1,10 @@
 <resources>
     <string name="app_name">Task Organizer</string>
-    <string-array name="time_spans">
+    <string-array name="reminder_time_spans">
         <item>At time of task</item>
         <item>1 Hour Before</item>
         <item>2 Hours Before</item>
+        <item>3 Hours Before</item>
         <item>1 Day Before</item>
         <item>2 Days Before</item>
         <item>3 Days Before</item>
@@ -13,6 +14,22 @@
         <item>1 Week Before</item>
         <item>2 Weeks Before</item>
         <item>3 Weeks Before</item>
-        <item>3 Weeks Before</item>
+        <item>4 Weeks Before</item>
     </string-array>
+    <integer-array name="reminder_time_seconds">
+        <item>0</item>
+        <item>3600</item>
+        <item>7200</item>
+        <item>10800</item>
+        <item>86400</item><!---1 day-->
+        <item>172800</item>
+        <item>259200</item>
+        <item>345600</item>
+        <item>432000</item>
+        <item>518400</item>
+        <item>604800</item><!---1 week-->
+        <item>1209600</item>
+        <item>1814400</item>
+        <item>2419200</item>
+    </integer-array>
 </resources>
