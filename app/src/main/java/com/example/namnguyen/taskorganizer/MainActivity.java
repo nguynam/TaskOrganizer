@@ -153,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             .setAction("Action", null).show();
 
                     if (childPosition == 1){
+                        address = myAdapter.getChild(myAdapter.getHeader(groupPosition), childPosition);
                         String addressSplit [] = address.split("\n");
                         Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
                                 Uri.parse("http://maps.google.co.in/maps?q=" + addressSplit[2]));
