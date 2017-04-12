@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         setContentView(R.layout.activity_main);
         expandableListView = (ExpandableListView) findViewById(R.id.listView);
         expandableListView.setAdapter(myAdapter);
-        expandableListView.setChildDivider(getResources().getDrawable(R.color.transparent));
+        expandableListView.setChildDivider(getResources().getDrawable(R.color.transparentChild));
 
         GoogleApiClient apiClient = new GoogleApiClient.Builder(this)
                 .addApi(Places.GEO_DATA_API)
