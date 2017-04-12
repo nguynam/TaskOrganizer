@@ -65,12 +65,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private ExpandableListView expandableListView;
     final List<String> headings = new ArrayList<>();
     HashMap<String, List<String>> childList = new HashMap<>();
+    //Create list of notifications each index will be key to the notification to allow modification/deletion and firebase persistance
+    List<Notification> notificationList = new ArrayList<>();
 
     final MyAdapter myAdapter = new MyAdapter(this, headings, childList);
     String heading;
     String child1 = "Add Description";
     String child2 = "\nAdd Location";
-
+    String child3 = "\nAdd Reminder";
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
@@ -85,7 +87,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     List<String> childItems = new ArrayList<>();
                     childItems.add(child1);
                     childItems.add(address);
-
+                    childItems.add(child3);
+                    child3 = "\nAdd Reminder";
                     myAdapter.addHeader(heading, -1);
                     myAdapter.addChild(heading, childItems);
                     myAdapter.notifyDataSetChanged();
@@ -246,6 +249,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                         e.printStackTrace();
                     }
                 }
+                if(childPosition == 2){
+                //TODO present reminder dialog to update
+                }
                 return false;
             }
         });
@@ -310,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                         List<String> childItems = new ArrayList<>();
                         childItems.add(child1);
                         childItems.add(child2);
-
+                        childItems.add(child3);
                         myAdapter.addHeader(heading, -1);
                         myAdapter.addChild(heading, childItems);
                         myAdapter.notifyDataSetChanged();
@@ -383,6 +389,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     String selected = getResources().getStringArray(R.array.reminder_time_spans)[i];
+                    child3 = "Reminder: " + selected;
                     int selectedTimeSeconds = getResources().getIntArray(R.array.reminder_time_seconds)[i];
                     Calendar reminderTime = Calendar.getInstance();
                     reminderTime.set(selectedYear,selectedMonth,selectedDay,hour,minute);
@@ -439,7 +446,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             List<String> childItems = new ArrayList<>();
                             childItems.add(child1);
                             childItems.add(child2);
-
+                            childItems.add(child3);
+                            child3 = "\nAdd Reminder";
                             myAdapter.addHeader(heading, -1);
                             myAdapter.addChild(heading, childItems);
                             myAdapter.notifyDataSetChanged();
@@ -463,7 +471,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             List<String> childItems = new ArrayList<>();
             childItems.add(child1);
             childItems.add(child2);
-
+            childItems.add(child3);
             myAdapter.addHeader(heading, -1);
             myAdapter.addChild(heading, childItems);
             myAdapter.notifyDataSetChanged();
