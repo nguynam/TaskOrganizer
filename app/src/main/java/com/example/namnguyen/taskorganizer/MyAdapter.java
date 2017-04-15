@@ -26,11 +26,14 @@ import java.util.List;
 
 
 public class MyAdapter extends BaseExpandableListAdapter {
+
     // Write a message to the database
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference firebaseListWrapper = database.getReference("userTasks");
-    ExpandableListWrapper listWrapper = new ExpandableListWrapper();
-    ValueEventListener firebaseListener = new ValueEventListener() {
+    private String userId;
+    private FirebaseDatabase database;
+    private DatabaseReference userData;
+    private DatabaseReference firebaseListWrapper;
+    private ExpandableListWrapper listWrapper;
+    private ValueEventListener firebaseListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             GenericTypeIndicator<ExpandableListWrapper> t = new GenericTypeIndicator<ExpandableListWrapper>() {};
@@ -50,13 +53,17 @@ public class MyAdapter extends BaseExpandableListAdapter {
     private List<String> header;
     private HashMap<String, List<String>> child_items;
     private Context ctx;
-
-    MyAdapter(Context ctx, List<String> header, HashMap<String, List<String>> child_items) {
-        firebaseListWrapper.addValueEventListener(firebaseListener);
+    MyAdapter(Context ctx, List<String> header, HashMap<String, List<String>> child_items, String userId) {
         this.ctx = ctx;
         this.header = header;
         this.child_items = child_items;
-        ExpandableListWrapper wrapper = new ExpandableListWrapper();
+        this.userId = userId;
+        database = FirebaseDatabase.getInstance();
+
+        userData = database.getReference("users");
+        firebaseListWrapper = userData.child(userId).child("userTasks");
+        firebaseListWrapper.addValueEventListener(firebaseListener);
+        listWrapper = new ExpandableListWrapper();
     }
 
     public void addHeader(String header, int position) {
@@ -70,6 +77,9 @@ public class MyAdapter extends BaseExpandableListAdapter {
             child_items.remove(temp2);
             child_items.put(header, temp);
         }
+    }
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getHeader(int position) {
