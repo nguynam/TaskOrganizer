@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -29,10 +31,14 @@ public class LoginActivity extends FragmentActivity {
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     CallbackManager callbackManager;
+    private TextView welcomeText;
+    private Button continueButton;
 // Initialize Facebook Login button
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        welcomeText = (TextView)findViewById(R.id.welcomeText);
+        continueButton = (Button)findViewById(R.id.continueButton);
         callbackManager = CallbackManager.Factory.create();
         mAuth = FirebaseAuth.getInstance();
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
@@ -52,18 +58,29 @@ public class LoginActivity extends FragmentActivity {
             public void onError(FacebookException error) {
             }
         });
+
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    // User is signed in
+                    // User is signed in start activity
+                    welcomeText.setText("Welcome " + user.getDisplayName() + "!");
+                    continueButton.setVisibility(View.VISIBLE);
                 } else {
                     // User is signed out
+                    continueButton.setVisibility(View.GONE);
                 }
-                // ...
             }
         };
+        continueButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent toMain = new Intent(getApplicationContext(),MainActivity.class);
+                toMain.putExtra("userId",FirebaseAuth.getInstance().getCurrentUser().getUid());
+                startActivity(toMain);
+            }
+        });
     }
 
     @Override
@@ -93,10 +110,7 @@ public class LoginActivity extends FragmentActivity {
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }else {
-                            //Start main activity
-                            Intent toMain = new Intent(getApplicationContext(),MainActivity.class);
-                            toMain.putExtra("userId",task.getResult().getUser().getUid());
-                            startActivity(toMain);
+                          //Success
                         }
                     }
                 });
