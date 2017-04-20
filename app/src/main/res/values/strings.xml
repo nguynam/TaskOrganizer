@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Task Organizer</string>
-    <string name="facebook_app_id">275681046224671</string>
-    <string name="fb_login_protocol_scheme">fb275681046224671</string>
+    <string name="facebook_app_id">279463892506071</string>
+    <string name="fb_login_protocol_scheme">fb279463892506071</string>
     <string-array name="reminder_time_spans">
         <item>At time of task</item>
         <item>1 Hour Before</item>
@@ -48,4 +48,6 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>

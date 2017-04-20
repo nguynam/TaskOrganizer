@@ -6,6 +6,8 @@ import android.app.Dialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -43,6 +45,8 @@ import java.util.Locale;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
 
+import layout.TasksWidget;
+
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
@@ -71,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     HashMap<String, List<String>> childList = new HashMap<>();
     //Create list of notifications each index will be key to the notification to allow modification/deletion and firebase persistance
     List<Notification> notificationList = new ArrayList<>();
-    MyAdapter myAdapter = null;
+    public static MyAdapter myAdapter = null;
     String heading;
     String child1 = "Add Description";
     String child2 = "\nAdd Location";
@@ -107,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         setContentView(R.layout.activity_main);
         extras = getIntent().getExtras();
         String userId = extras.getString("userId",null);
-        myAdapter = new MyAdapter(this, headings, childList,userId);
+        myAdapter = new MyAdapter(this, headings, childList, userId);
         expandableListView = (ExpandableListView) findViewById(R.id.listView);
         expandableListView.setAdapter(myAdapter);
         expandableListView.setChildDivider(getResources().getDrawable(R.color.transparentChild));

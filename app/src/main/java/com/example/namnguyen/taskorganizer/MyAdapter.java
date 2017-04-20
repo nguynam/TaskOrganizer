@@ -1,6 +1,9 @@
 package com.example.namnguyen.taskorganizer;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListAdapter;
 import android.widget.ListAdapter;
+import android.widget.RemoteViews;
+import android.widget.RemoteViewsService;
 import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -20,15 +25,20 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
 import java.util.List;
 
+import layout.TasksWidget;
+
 /**
  * Created by NamNguyen on 3/28/17.
  */
 
 
-public class MyAdapter extends BaseExpandableListAdapter {
+public class MyAdapter extends BaseExpandableListAdapter implements RemoteViewsService.RemoteViewsFactory{
+    private List<String> header;
+    private HashMap<String, List<String>> child_items;
+    private Context ctx;
 
     // Write a message to the database
-    private String userId;
+    public static String userId;
     private FirebaseDatabase database;
     private DatabaseReference userData;
     private DatabaseReference firebaseListWrapper;
@@ -50,14 +60,13 @@ public class MyAdapter extends BaseExpandableListAdapter {
 
         }
     };
-    private List<String> header;
-    private HashMap<String, List<String>> child_items;
-    private Context ctx;
+
     MyAdapter(Context ctx, List<String> header, HashMap<String, List<String>> child_items, String userId) {
         this.ctx = ctx;
         this.header = header;
         this.child_items = child_items;
         this.userId = userId;
+        WidgetService.userId = userId;
         database = FirebaseDatabase.getInstance();
 
         userData = database.getReference("users");
@@ -86,6 +95,10 @@ public class MyAdapter extends BaseExpandableListAdapter {
         return header.get(position);
     }
 
+    public List<String> getHeaderList(){
+        return this.header;
+    }
+
     public void addChild(String key, List<String> children) {
         this.child_items.put(key, children);
     }
@@ -111,8 +124,15 @@ public class MyAdapter extends BaseExpandableListAdapter {
     public void removeChildren(int position) {
         child_items.remove(header.get(position));
     }
+
     @Override
     public void notifyDataSetChanged(){
+        Intent intent = new Intent(ctx, TasksWidget.class);
+        intent.setAction("UPDATE_LIST");
+        int[] ids = {0};
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
+        ctx.sendBroadcast(intent);
+
         listWrapper.setHeaders(header);
         listWrapper.encodeChildren(child_items);
         firebaseListWrapper.setValue(listWrapper);
@@ -146,6 +166,46 @@ public class MyAdapter extends BaseExpandableListAdapter {
     @Override
     public long getChildId(int groupPosition, int childPosition) {
         return childPosition;
+    }
+
+    @Override
+    public void onCreate() {
+
+    }
+
+    @Override
+    public void onDataSetChanged() {
+
+    }
+
+    @Override
+    public void onDestroy() {
+
+    }
+
+    @Override
+    public int getCount() {
+        return 0;
+    }
+
+    @Override
+    public RemoteViews getViewAt(int position) {
+        return null;
+    }
+
+    @Override
+    public RemoteViews getLoadingView() {
+        return null;
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return 0;
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return 0;
     }
 
     @Override
