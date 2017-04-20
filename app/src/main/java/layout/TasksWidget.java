@@ -26,7 +26,6 @@ public class TasksWidget extends AppWidgetProvider {
         CharSequence widgetText = context.getString(R.string.appwidget_text);
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.tasks_widget);
-        views.setTextViewText(R.id.updateButton, "Update");
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
@@ -44,13 +43,8 @@ public class TasksWidget extends AppWidgetProvider {
             widget.setRemoteAdapter(R.id.tasksListWidget, svcIntent);
 
             Intent clickIntent = new Intent(context, MainActivity.class);
-            PendingIntent clickPI = PendingIntent.getActivity(context, 0, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent clickPI = PendingIntent.getActivity(context, appWidgetId, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             widget.setPendingIntentTemplate(R.id.tasksListWidget, clickPI);
-
-            clickIntent = new Intent(context, TasksWidget.class);
-            clickIntent.setAction(UPDATE_LIST);
-            PendingIntent pendingIntentRefresh = PendingIntent.getBroadcast(context,0, clickIntent, 0);
-            widget.setOnClickPendingIntent(R.id.updateButton, pendingIntentRefresh);
 
             appWidgetManager.updateAppWidget(appWidgetId, widget);
         }

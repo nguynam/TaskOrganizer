@@ -3,19 +3,10 @@
     android:layout_height="match_parent"
     android:padding="@dimen/widget_margin">
 
-    <Button
-        android:id="@+id/updateButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/tasksListWidget"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="26dp"
-        android:text="Update" />
-
     <ListView
         android:id="@+id/tasksListWidget"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true" />
 

@@ -18,6 +18,8 @@ import java.util.List;
 
 import layout.TasksWidget;
 
+import static android.R.style.Widget;
+
 /**
  * Created by NamNguyen on 4/18/17.
  */
@@ -68,6 +70,7 @@ public class WidgetService implements RemoteViewsService.RemoteViewsFactory {
     @Override
     public void onDataSetChanged() {
         firebaseListWrapper = userData.child(userId).child("userTasks");
+        firebaseListWrapper.addValueEventListener(firebaseListener);
     }
 
     @Override

@@ -6,8 +6,6 @@ import android.app.Dialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -42,10 +40,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import com.facebook.FacebookSdk;
-import com.facebook.appevents.AppEventsLogger;
-
-import layout.TasksWidget;
 
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
@@ -56,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private int hour, minute;
     private long millisecondsUntilReminder;
     private int deletePosition;
+    private int updatePosition;
     private int reminder;
     private String task;
     private String taskDescription;
@@ -78,8 +73,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     public static MyAdapter myAdapter = null;
     String heading;
     String child1 = "Add Description";
-    String child2 = "\nAdd Location";
-    String child3 = "\nAdd Reminder";
+    String child2 = "\nAdd Time";
+    String child3 = "\nAdd Location";
+    String child4 = "\nAdd Reminder";
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE){
@@ -87,15 +83,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 Place pl = PlaceAutocomplete.getPlace(this, data);
                 address = "\nAddress:" + "\n" + pl.getAddress().toString();
                 if(changingData){
-                    myAdapter.replaceChildItem(task, address, 1);
+                    myAdapter.replaceChildItem(task, address, 2);
                     myAdapter.notifyDataSetChanged();
                 }
                 else{
                     List<String> childItems = new ArrayList<>();
                     childItems.add(child1);
+                    childItems.add(child2);
                     childItems.add(address);
-                    childItems.add(child3);
-                    child3 = "\nAdd Reminder";
+                    childItems.add(child4);
+                    child4 = "\nAdd Reminder";
                     myAdapter.addHeader(heading, -1);
                     myAdapter.addChild(heading, childItems);
                     myAdapter.notifyDataSetChanged();
@@ -166,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     Snackbar.make(view, "ChildPosition: " + childPosition, Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
 
-                    if (childPosition == 1){
+                    if (childPosition == 2){
                         address = myAdapter.getChild(myAdapter.getHeader(groupPosition), childPosition);
                         String addressSplit [] = address.split("\n");
                         Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
@@ -189,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     final Dialog dialog = new Dialog(MainActivity.this);
                     dialog.setContentView(R.layout.title_description_dialog);
                     Window window = dialog.getWindow();
-                    window.setLayout(1000, 800);
+                    window.setLayout(1300, 1100);
 
                     //Attach all of the buttons and text fields
                     final EditText title = (EditText) dialog.findViewById(R.id.taskTitle);
@@ -245,7 +242,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                         }
                     });
                 }
-                if (childPosition == 1) {
+                if (childPosition == 1){
+                    changingData = true;
+                    task = myAdapter.getHeader(groupPosition);
+                    updatePosition = groupPosition;
+                    datePickerDialog.show();
+                }
+                if (childPosition == 2) {
                     changingData = true;
                     try {
                         Intent intent =
@@ -259,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                         e.printStackTrace();
                     }
                 }
-                if(childPosition == 2){
+                if(childPosition == 3){
                 //TODO present reminder dialog to update
                 }
                 return false;
@@ -278,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 final Dialog dialog = new Dialog(MainActivity.this);
                 dialog.setContentView(R.layout.title_description_dialog);
                 Window window = dialog.getWindow();
-                window.setLayout(1000, 800);
+                window.setLayout(1300, 1100);
                 dialog.show();
 
                 final EditText title = (EditText) dialog.findViewById(R.id.taskTitle);
@@ -327,6 +330,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                         childItems.add(child1);
                         childItems.add(child2);
                         childItems.add(child3);
+                        childItems.add(child4);
                         myAdapter.addHeader(heading, -1);
                         myAdapter.addChild(heading, childItems);
                         myAdapter.notifyDataSetChanged();
@@ -377,8 +381,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             int formattedHour;
             if (hourOfDay > 12) {
                 formattedHour = hourOfDay - 12;
-            } else {
+            }
+            else {
                 formattedHour = hourOfDay;
+                if(formattedHour == 00){
+                    formattedHour = 12;
+                }
             }
             minute = minuteOfDay;
             time = String.format(Locale.US, "%02d:%02d %s", formattedHour, minute,
@@ -393,14 +401,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     reminderDialog.dismiss();
-                    //TODO Present location dialog and reset child3
+                    //TODO Present location dialog and reset child4
                 }
             });
             builder.setSingleChoiceItems(R.array.reminder_time_spans, -1, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     String selected = getResources().getStringArray(R.array.reminder_time_spans)[i];
-                    child3 = "Reminder: " + selected;
+                    child4 = "\nReminder: " + selected;
                     int selectedTimeSeconds = getResources().getIntArray(R.array.reminder_time_seconds)[i];
                     Calendar reminderTime = Calendar.getInstance();
                     reminderTime.set(selectedYear,selectedMonth,selectedDay,hour,minute);
@@ -412,21 +420,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             });
             reminderDialog = builder.create();
             timePickerDialog.dismiss();
-            reminderDialog.show();
+
+            if(!changingData){
+                reminderDialog.show();
+            }
+            else{
+                date = "\n" + (selectedMonth + 1) + "/" + selectedDay + "/" + selectedYear;
+                String split[] = task.split("\n");
+                heading = split[0] + date + " at " + time;
+                child2 = "\nDue: " + date + " at " + time;
+                myAdapter.addHeader(heading, updatePosition);
+                myAdapter.replaceChildItem(heading, child2, 1);
+                myAdapter.notifyDataSetChanged();
+            }
         }
     };
     private DialogInterface.OnClickListener reminderListener = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialogInterface, int i) {
-            if (currentDay == selectedDay && currentMonth == selectedMonth) {
-                date = "\nToday";
-            } else if (selectedDay == currentDay + 1 && currentMonth == selectedMonth || (currentDay == 30 || currentDay == 31) && selectedDay == 1) {
-                date = "\nTomorrow";
-            } else {
-                date = "\n" + (selectedMonth + 1) + "/" + selectedDay + "/" + selectedYear;
-            }
+//            if (currentDay == selectedDay && currentMonth == selectedMonth) {
+//                date = "\nToday";
+//            } else if (selectedDay == currentDay + 1 && currentMonth == selectedMonth || (currentDay == 30 || currentDay == 31) && selectedDay == 1) {
+//                date = "\nTomorrow";
+//            } else {
+//                date = "\n" + (selectedMonth + 1) + "/" + selectedDay + "/" + selectedYear;
+//            }
 
+            date = "\n" + (selectedMonth + 1) + "/" + selectedDay + "/" + selectedYear;
             heading = task + date + " at " + time;
+            child2 = "\nDue: " + date + " at " + time;
             changingData = false;
 
             AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
@@ -458,7 +480,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             childItems.add(child1);
                             childItems.add(child2);
                             childItems.add(child3);
-                            child3 = "\nAdd Reminder";
+                            childItems.add(child4);
+                            child4 = "\nAdd Reminder";
                             myAdapter.addHeader(heading, -1);
                             myAdapter.addChild(heading, childItems);
                             myAdapter.notifyDataSetChanged();
@@ -483,6 +506,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             childItems.add(child1);
             childItems.add(child2);
             childItems.add(child3);
+            childItems.add(child4);
             myAdapter.addHeader(heading, -1);
             myAdapter.addChild(heading, childItems);
             myAdapter.notifyDataSetChanged();
