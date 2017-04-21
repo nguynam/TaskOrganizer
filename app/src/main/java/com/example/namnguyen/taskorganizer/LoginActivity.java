@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -40,9 +41,19 @@ public class LoginActivity extends FragmentActivity {
         welcomeText = (TextView)findViewById(R.id.welcomeText);
         continueButton = (Button)findViewById(R.id.continueButton);
         callbackManager = CallbackManager.Factory.create();
+        AccessTokenTracker accessTokenTracker = new AccessTokenTracker(){
+            @Override
+            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken,AccessToken currentAccessToken){
+                if(currentAccessToken == null){
+                    //User logged out of facebook. So log them out of firebase
+                    FirebaseAuth.getInstance().signOut();
+                }
+            }
+        };
         mAuth = FirebaseAuth.getInstance();
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.setReadPermissions("email", "public_profile");
+        accessTokenTracker.startTracking();
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -70,6 +81,7 @@ public class LoginActivity extends FragmentActivity {
                 } else {
                     // User is signed out
                     continueButton.setVisibility(View.GONE);
+                    welcomeText.setText("Welcome!");
                 }
             }
         };
@@ -96,6 +108,7 @@ public class LoginActivity extends FragmentActivity {
             mAuth.removeAuthStateListener(mAuthListener);
         }
     }
+
     private void handleFacebookAccessToken(AccessToken token) {
 
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
