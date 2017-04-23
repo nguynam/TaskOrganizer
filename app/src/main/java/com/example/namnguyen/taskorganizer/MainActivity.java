@@ -13,10 +13,12 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -27,6 +29,7 @@ import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.TimePicker;
 
+import com.facebook.login.LoginManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -64,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     TimePickerDialog timePickerDialog;
     Dialog reminderDialog;
     Dialog googleDialog;
+    Toolbar toolbar;
 
     private ExpandableListView expandableListView;
     final List<String> headings = new ArrayList<>();
@@ -113,6 +117,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         expandableListView.setAdapter(myAdapter);
         expandableListView.setChildDivider(getResources().getDrawable(R.color.transparentChild));
 
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.showOverflowMenu();
+
         GoogleApiClient apiClient = new GoogleApiClient.Builder(this)
                 .addApi(Places.GEO_DATA_API)
                 .addApi(Places.PLACE_DETECTION_API)
@@ -156,13 +164,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 if (itemType == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
                     deleteDialog.show();
                     deletePosition = position;
-                    Snackbar.make(view, "GroupPosition: " + groupPosition, Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
                 }
                 else if (itemType == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
-                    Snackbar.make(view, "ChildPosition: " + childPosition, Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-
                     if (childPosition == 2){
                         address = myAdapter.getChild(myAdapter.getHeader(groupPosition), childPosition);
                         String addressSplit [] = address.split("\n");
@@ -179,14 +182,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, final int groupPosition, final int childPosition, long id) {
-                Snackbar.make(v, "Position: " + childPosition, Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
                 if (childPosition == 0) {
                     //Show title/description dialog
                     final Dialog dialog = new Dialog(MainActivity.this);
                     dialog.setContentView(R.layout.title_description_dialog);
                     Window window = dialog.getWindow();
-                    window.setLayout(1300, 1100);
+                    window.setLayout(1000, 800);
 
                     //Attach all of the buttons and text fields
                     final EditText title = (EditText) dialog.findViewById(R.id.taskTitle);
@@ -276,12 +277,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             public void onClick(View view) {
                 //Get current date
                 setCurrentDate();
+                changingData = false;
 
                 //Creates title/description dialog
                 final Dialog dialog = new Dialog(MainActivity.this);
                 dialog.setContentView(R.layout.title_description_dialog);
                 Window window = dialog.getWindow();
-                window.setLayout(1300, 1100);
+                window.setLayout(1000, 800);
                 dialog.show();
 
                 final EditText title = (EditText) dialog.findViewById(R.id.taskTitle);
@@ -537,5 +539,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         return;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.logoutMenuButton){
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+
+            LoginManager.getInstance().logOut();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

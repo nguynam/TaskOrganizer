@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +37,8 @@ public class MyAdapter extends BaseExpandableListAdapter implements RemoteViewsS
     private List<String> header;
     private HashMap<String, List<String>> child_items;
     private Context ctx;
+
+    Typeface bold, regular;
 
     // Write a message to the database
     public static String userId;
@@ -73,6 +76,9 @@ public class MyAdapter extends BaseExpandableListAdapter implements RemoteViewsS
         firebaseListWrapper = userData.child(userId).child("userTasks");
         firebaseListWrapper.addValueEventListener(firebaseListener);
         listWrapper = new ExpandableListWrapper();
+
+        bold = Typeface.createFromAsset(ctx.getAssets(), "fonts/OpenSans-Regular.ttf");
+        regular = Typeface.createFromAsset(ctx.getAssets(), "fonts/OpenSans-Light.ttf");
     }
 
     public void addHeader(String header, int position) {
@@ -87,16 +93,9 @@ public class MyAdapter extends BaseExpandableListAdapter implements RemoteViewsS
             child_items.put(header, temp);
         }
     }
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
 
     public String getHeader(int position) {
         return header.get(position);
-    }
-
-    public List<String> getHeaderList(){
-        return this.header;
     }
 
     public void addChild(String key, List<String> children) {
@@ -220,7 +219,7 @@ public class MyAdapter extends BaseExpandableListAdapter implements RemoteViewsS
             convertView = layoutInflater.inflate(R.layout.parent_layout, null);
         }
         TextView textView = (TextView) convertView.findViewById(R.id.header);
-        textView.setTypeface(null, Typeface.BOLD);
+        textView.setTypeface(bold);
         textView.setText(header);
 
         return convertView;
@@ -234,7 +233,9 @@ public class MyAdapter extends BaseExpandableListAdapter implements RemoteViewsS
             convertView = layoutInflater.inflate(R.layout.child_layout, null);
         }
         TextView textView = (TextView) convertView.findViewById(R.id.childItem);
+        textView.setTypeface(regular);
         textView.setText(title);
+
         return convertView;
     }
 

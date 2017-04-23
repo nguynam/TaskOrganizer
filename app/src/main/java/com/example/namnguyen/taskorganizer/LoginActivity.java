@@ -16,6 +16,7 @@ import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -76,8 +77,9 @@ public class LoginActivity extends FragmentActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in start activity
-                    welcomeText.setText("Welcome " + user.getDisplayName() + "!");
-                    continueButton.setVisibility(View.VISIBLE);
+                    Intent toMain = new Intent(getApplicationContext(),MainActivity.class);
+                    toMain.putExtra("userId",FirebaseAuth.getInstance().getCurrentUser().getUid());
+                    startActivity(toMain);
                 } else {
                     // User is signed out
                     continueButton.setVisibility(View.GONE);

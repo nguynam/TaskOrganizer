@@ -6,19 +6,25 @@
     android:layout_height="match_parent"
     tools:context="com.example.namnguyen.taskorganizer.MainActivity">
 
-    <ExpandableListView
-        android:id="@+id/listView"
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginRight="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintLeft_toLeftOf="@+id/listView"
+        app:layout_constraintRight_toRightOf="@+id/listView"
+        tools:layout_editor_absoluteX="8dp"
+        android:layout_marginTop="0dp">
 
-    </ExpandableListView>
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floatingActionButton"
@@ -27,12 +33,25 @@
         android:layout_marginBottom="32dp"
         android:layout_marginRight="32dp"
         android:clickable="true"
-        android:tint="@android:color/background_dark"
-        app:backgroundTint="@android:color/background_light"
+        android:tint="@color/cardview_light_background"
         app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:srcCompat="@android:drawable/ic_input_add"
-        tools:layout_editor_absoluteY="336dp" />
+        android:layout_marginEnd="32dp" />
+
+    <ExpandableListView
+        android:id="@+id/listView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout"
+        app:layout_constraintVertical_bias="1.0"
+        android:layout_marginTop="0dp">
+
+    </ExpandableListView>
 
 </android.support.constraint.ConstraintLayout>
