@@ -27,6 +27,7 @@ import java.util.Map;
 public class ExpandableListWrapper {
     public List<String> headers;
     public String children;
+    public String token;
     public void setHeaders(List<String> headers){
         this.headers = headers;
     }
