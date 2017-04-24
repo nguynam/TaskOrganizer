@@ -4,7 +4,9 @@
   "dependencies": {
     "@google-cloud/debug-agent": "^1.0.0",
     "firebase-admin": "~4.1.2",
-    "firebase-functions": "^0.5"
+    "firebase-functions": "^0.5",
+    "moment": "^2.18.1",
+    "moment-timezone": "^0.5.13"
   },
   "private": true
 }
