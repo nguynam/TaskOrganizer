@@ -80,7 +80,10 @@ public class MyAdapter extends BaseExpandableListAdapter implements RemoteViewsS
         bold = Typeface.createFromAsset(ctx.getAssets(), "fonts/OpenSans-Regular.ttf");
         regular = Typeface.createFromAsset(ctx.getAssets(), "fonts/OpenSans-Light.ttf");
     }
-
+    public void updateFCMToken(String token){
+        listWrapper.token = token;
+        notifyDataSetChanged();
+    }
     public void addHeader(String header, int position) {
         if (position == -1) {
             this.header.add(header);

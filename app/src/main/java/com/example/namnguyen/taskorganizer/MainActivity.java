@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private String time;
     private String address;
     private boolean changingData = false;
+    public static String token = null;
     private Bundle extras;
 
     DatePickerDialog datePickerDialog;
@@ -100,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     myAdapter.addHeader(heading, -1);
                     myAdapter.addChild(heading, childItems);
                     myAdapter.notifyDataSetChanged();
-                    scheduleNotification("Reminder: " + heading, heading + " is due soon",millisecondsUntilReminder);
                 }
             }
         }
@@ -116,7 +116,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         expandableListView = (ExpandableListView) findViewById(R.id.listView);
         expandableListView.setAdapter(myAdapter);
         expandableListView.setChildDivider(getResources().getDrawable(R.color.transparentChild));
-
+        if(token != null){
+            //update token in DB
+            myAdapter.updateFCMToken(token);
+        }
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.showOverflowMenu();
@@ -488,7 +491,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             myAdapter.addChild(heading, childItems);
                             myAdapter.notifyDataSetChanged();
                             googleDialog.dismiss();
-                            scheduleNotification("Reminder: " + heading, heading + " is due soon",millisecondsUntilReminder);
                         }
                     });
             googleDialog = builder1.create();
@@ -515,26 +517,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
     };
 
-    private void scheduleNotification(String title, String message, long millisecondsFromNow) {
-        //Build notification
-        Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentTitle(title);
-        builder.setContentText(message);
-        builder.setSmallIcon(R.mipmap.ic_launcher);
-        builder.setPriority(Notification.PRIORITY_HIGH);
-        builder.setDefaults(Notification.DEFAULT_ALL);
-        Notification notification = builder.build();
-
-        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
-        //TODO Research id relevance
-        notificationIntent.putExtra("notification-id", 1);
-        notificationIntent.putExtra("notification", notification);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        notification.contentIntent = pendingIntent;
-        long futureInMillis = SystemClock.elapsedRealtime() + millisecondsFromNow;
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
-    }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
