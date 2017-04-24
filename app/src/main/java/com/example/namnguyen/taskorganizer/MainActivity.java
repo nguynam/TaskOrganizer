@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     childItems.add(child2);
                     childItems.add(address);
                     childItems.add(child4);
+                    child2 = "\nAdd Time";
                     child4 = "\nAdd Reminder";
                     myAdapter.addHeader(heading, -1);
                     myAdapter.addChild(heading, childItems);
@@ -250,6 +251,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     changingData = true;
                     task = myAdapter.getHeader(groupPosition);
                     updatePosition = groupPosition;
+                    setCurrentDate();
+                    datePickerDialog = new DatePickerDialog(MainActivity.this, datePickerListener, currentYear, currentMonth, currentDay);
+                    datePickerDialog.setButton(DatePickerDialog.BUTTON_NEGATIVE, "CANCEL", dateCancelListener);
                     datePickerDialog.show();
                 }
                 if (childPosition == 2) {
@@ -329,6 +333,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                         }
                         dialog.dismiss();
                         heading = task;
+                        child2 = "\nAdd Time";
 
                         //Adds all information to array and pass it to the adapter
                         List<String> childItems = new ArrayList<>();
@@ -486,6 +491,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             childItems.add(child2);
                             childItems.add(child3);
                             childItems.add(child4);
+                            child2 = "\nAdd Time";
                             child4 = "\nAdd Reminder";
                             myAdapter.addHeader(heading, -1);
                             myAdapter.addChild(heading, childItems);
@@ -505,15 +511,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             dialog.dismiss();
             heading = task;
 
-            //Adds all information to array and pass it to the adapter
-            List<String> childItems = new ArrayList<>();
-            childItems.add(child1);
-            childItems.add(child2);
-            childItems.add(child3);
-            childItems.add(child4);
-            myAdapter.addHeader(heading, -1);
-            myAdapter.addChild(heading, childItems);
-            myAdapter.notifyDataSetChanged();
+            if(!changingData){
+                //Adds all information to array and pass it to the adapter
+                List<String> childItems = new ArrayList<>();
+                childItems.add(child1);
+                childItems.add(child2);
+                childItems.add(child3);
+                childItems.add(child4);
+                myAdapter.addHeader(heading, -1);
+                myAdapter.addChild(heading, childItems);
+                myAdapter.notifyDataSetChanged();
+            }
         }
     };
 
