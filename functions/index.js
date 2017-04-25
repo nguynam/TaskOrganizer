@@ -59,9 +59,9 @@ exports.minute_job = functions.https.onRequest((req, res) => {
         priority: "high"
       };
       const payload = {
-      notification: {
+      data: {
         title: 'Task Is Due Soon',
-        body: 'You have a remnder'
+        body: 'You have a reminder'
       }
     };
     console.log("receivedToken: " + receivedToken);
