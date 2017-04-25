@@ -39,6 +39,7 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +52,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     private int currentYear, currentMonth, currentDay;
     private int selectedYear, selectedMonth, selectedDay;
     private int hour, minute;
-    private long millisecondsUntilReminder;
     private int deletePosition;
     private int updatePosition;
     private int reminder;
@@ -271,7 +271,38 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     }
                 }
                 if(childPosition == 3){
-                //TODO present reminder dialog to update
+                    changingData = true;
+                    task = myAdapter.getHeader(groupPosition);
+                    String currentSelection = myAdapter.getChild(task,3);
+                    child4 = currentSelection;
+                    int selected = -1;
+                    if(!currentSelection.equals("\nAdd Reminder")){
+                        //Clean \n from string for comparisons
+                        currentSelection = currentSelection.substring(currentSelection.indexOf(":")+2);
+                        List<String> intervals = Arrays.asList(getResources().getStringArray(R.array.reminder_time_spans));
+                        selected = intervals.indexOf(currentSelection);
+                    }
+                    //Create TimeSpan selection dialog
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("Set Reminder");
+                    builder.setCancelable(true);
+                    builder.setPositiveButton("Okay", reminderListener);
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            reminderDialog.dismiss();
+                            child4 = "\nAdd Reminder";
+                        }
+                    });
+                    builder.setSingleChoiceItems(R.array.reminder_time_spans, selected, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            String selected = getResources().getStringArray(R.array.reminder_time_spans)[i];
+                            child4 = "\nReminder: " + selected;
+                        }
+                    });
+                    reminderDialog = builder.create();
+                    reminderDialog.show();
                 }
                 return false;
             }
@@ -407,11 +438,56 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             builder.setTitle("Set Reminder");
             builder.setCancelable(true);
             builder.setPositiveButton("Okay", reminderListener);
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            builder.setNegativeButton("Next", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     reminderDialog.dismiss();
-                    //TODO Present location dialog and reset child4
+                    child4 = "\nAdd Reminder";
+                    //Skipping so present location option
+                    date = "\n" + (selectedMonth + 1) + "/" + selectedDay + "/" + selectedYear;
+                    heading = task + date + " at " + time;
+                    child2 = "\nDue: " + date + " at " + time;
+                    changingData = false;
+                    AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
+                    builder1.setMessage("Add a location for this task?");
+                    builder1.setCancelable(true);
+                    builder1.setPositiveButton(
+                            "Yes",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    try {
+                                        Intent intent =
+                                                new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+                                                        .build(MainActivity.this);
+                                        startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                                    } catch (GooglePlayServicesRepairableException e) {
+                                        e.printStackTrace();
+                                    } catch (GooglePlayServicesNotAvailableException e) {
+                                        e.printStackTrace();
+                                    }
+                                    googleDialog.dismiss();
+                                }
+                            });
+
+                    builder1.setNegativeButton(
+                            "No",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    List<String> childItems = new ArrayList<>();
+                                    childItems.add(child1);
+                                    childItems.add(child2);
+                                    childItems.add(child3);
+                                    childItems.add(child4);
+                                    child2 = "\nAdd Time";
+                                    child4 = "\nAdd Reminder";
+                                    myAdapter.addHeader(heading, -1);
+                                    myAdapter.addChild(heading, childItems);
+                                    myAdapter.notifyDataSetChanged();
+                                    googleDialog.dismiss();
+                                }
+                            });
+                    googleDialog = builder1.create();
+                    googleDialog.show();
                 }
             });
             builder.setSingleChoiceItems(R.array.reminder_time_spans, -1, new DialogInterface.OnClickListener() {
@@ -419,13 +495,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 public void onClick(DialogInterface dialogInterface, int i) {
                     String selected = getResources().getStringArray(R.array.reminder_time_spans)[i];
                     child4 = "\nReminder: " + selected;
-                    int selectedTimeSeconds = getResources().getIntArray(R.array.reminder_time_seconds)[i];
-                    Calendar reminderTime = Calendar.getInstance();
-                    reminderTime.set(selectedYear,selectedMonth,selectedDay,hour,minute);
-                    //Subtract selected reminder seconds from selected date/time
-                    reminderTime.add(Calendar.SECOND,0-selectedTimeSeconds);
-                    Calendar currentTime = Calendar.getInstance();
-                    millisecondsUntilReminder = (reminderTime.getTimeInMillis() - currentTime.getTimeInMillis());
                 }
             });
             reminderDialog = builder.create();
@@ -455,53 +524,59 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 //            } else {
 //                date = "\n" + (selectedMonth + 1) + "/" + selectedDay + "/" + selectedYear;
 //            }
-
-            date = "\n" + (selectedMonth + 1) + "/" + selectedDay + "/" + selectedYear;
-            heading = task + date + " at " + time;
-            child2 = "\nDue: " + date + " at " + time;
-            changingData = false;
-
-            AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
-            builder1.setMessage("Add a location for this task?");
-            builder1.setCancelable(true);
-            builder1.setPositiveButton(
-                    "Yes",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            try {
-                                Intent intent =
-                                        new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
-                                                .build(MainActivity.this);
-                                startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
-                            } catch (GooglePlayServicesRepairableException e) {
-                                e.printStackTrace();
-                            } catch (GooglePlayServicesNotAvailableException e) {
-                                e.printStackTrace();
+            if(!changingData){
+                date = "\n" + (selectedMonth + 1) + "/" + selectedDay + "/" + selectedYear;
+                heading = task + date + " at " + time;
+                child2 = "\nDue: " + date + " at " + time;
+                changingData = false;
+                AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
+                builder1.setMessage("Add a location for this task?");
+                builder1.setCancelable(true);
+                builder1.setPositiveButton(
+                        "Yes",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                try {
+                                    Intent intent =
+                                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
+                                                    .build(MainActivity.this);
+                                    startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                                } catch (GooglePlayServicesRepairableException e) {
+                                    e.printStackTrace();
+                                } catch (GooglePlayServicesNotAvailableException e) {
+                                    e.printStackTrace();
+                                }
+                                googleDialog.dismiss();
                             }
-                            googleDialog.dismiss();
-                        }
-                    });
+                        });
 
-            builder1.setNegativeButton(
-                    "No",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            List<String> childItems = new ArrayList<>();
-                            childItems.add(child1);
-                            childItems.add(child2);
-                            childItems.add(child3);
-                            childItems.add(child4);
-                            child2 = "\nAdd Time";
-                            child4 = "\nAdd Reminder";
-                            myAdapter.addHeader(heading, -1);
-                            myAdapter.addChild(heading, childItems);
-                            myAdapter.notifyDataSetChanged();
-                            googleDialog.dismiss();
-                        }
-                    });
-            googleDialog = builder1.create();
-            googleDialog.show();
+                builder1.setNegativeButton(
+                        "No",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                List<String> childItems = new ArrayList<>();
+                                childItems.add(child1);
+                                childItems.add(child2);
+                                childItems.add(child3);
+                                childItems.add(child4);
+                                child2 = "\nAdd Time";
+                                child4 = "\nAdd Reminder";
+                                myAdapter.addHeader(heading, -1);
+                                myAdapter.addChild(heading, childItems);
+                                myAdapter.notifyDataSetChanged();
+                                googleDialog.dismiss();
+                            }
+                        });
+                googleDialog = builder1.create();
+                googleDialog.show();
+            }else{
+                //Handle replacment of reminder
+                myAdapter.replaceChildItem(task,child4,3);
+                myAdapter.notifyDataSetChanged();
+                child4 = "\nAdd Reminder";
+            }
         }
+
     };
 
     //If cancel button is pressed
