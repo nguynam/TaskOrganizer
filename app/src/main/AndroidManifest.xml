@@ -54,6 +54,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".TutorialActivity"></activity>
+
         <receiver android:name="layout.TasksWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

@@ -234,7 +234,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                             }
                             String taskDescription = "Description:" + "\n" + description.getText().toString();
                             myAdapter.addHeader(task, groupPosition);
-                            myAdapter.replaceChildItem(task, taskDescription, childPosition);
+                            if(!description.getText().toString().equals(""))
+                                myAdapter.replaceChildItem(task, taskDescription, childPosition);
+
+                            else{
+                                taskDescription = "Add Description";
+                                myAdapter.replaceChildItem(task, taskDescription, childPosition);
+                            }
                             myAdapter.notifyDataSetChanged();
                             dialog.dismiss();
                         }
@@ -619,6 +625,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             startActivity(intent);
 
             LoginManager.getInstance().logOut();
+        }
+
+        if(item.getItemId() == R.id.tutorialMenuButton){
+            Intent intent = new Intent(MainActivity.this, TutorialActivity.class);
+            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
     }
