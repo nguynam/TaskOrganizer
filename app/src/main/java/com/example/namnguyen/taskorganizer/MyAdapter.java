@@ -42,6 +42,8 @@ public class MyAdapter extends BaseExpandableListAdapter implements RemoteViewsS
 
     // Write a message to the database
     public static String userId;
+    private boolean hasPulledData = false;
+    private String tempNewToken = null;
     private FirebaseDatabase database;
     private DatabaseReference userData;
     private DatabaseReference firebaseListWrapper;
@@ -56,6 +58,13 @@ public class MyAdapter extends BaseExpandableListAdapter implements RemoteViewsS
             header = listWrapper.getHeaders();
             child_items = listWrapper.decodeChildren();
             MyAdapter.super.notifyDataSetChanged();
+            if(!hasPulledData && tempNewToken != null){
+                //After first pull send new token back to firebase (prevents overriding firebase with null values before pulling them).
+                listWrapper.token = tempNewToken;
+                tempNewToken = null;
+                notifyDataSetChanged();
+            }
+            hasPulledData = true;
         }
 
         @Override
@@ -81,8 +90,9 @@ public class MyAdapter extends BaseExpandableListAdapter implements RemoteViewsS
         regular = Typeface.createFromAsset(ctx.getAssets(), "fonts/OpenSans-Light.ttf");
     }
     public void updateFCMToken(String token){
-        listWrapper.token = token;
-        notifyDataSetChanged();
+        tempNewToken = token;
+        //Will be updated in firebase after first pull from firebase.
+
     }
     public void addHeader(String header, int position) {
         if (position == -1) {
