@@ -15,6 +15,7 @@ exports.minute_job = functions.https.onRequest((req, res) => {
       for(var task in json){
         var reminderText = json[task][3];
         var dueDateText = json[task][1];
+        console.log("task: " + task);
         console.log(reminderText);
         if(reminderText.includes("Before")){
             var reminderTextClean = reminderText.substring(reminderText.indexOf(":")+2);
@@ -28,7 +29,10 @@ exports.minute_job = functions.https.onRequest((req, res) => {
               //Same time
               //Send notification
               console.log("Same Time");
-              sendNotification(token);
+              var taskTitle = task.match(/.+?(?=(\\n)|(\W\d{1,2}\/\d{2}\/\d{4})|($))/);
+              var notificationMessage = String(taskTitle[0]) + " is due soon.";
+              console.log("Sending notification: " + notificationMessage);
+              sendNotification(token,notificationMessage);
             }else{
               //Time differs
               console.log("Time Differs");
@@ -43,7 +47,11 @@ exports.minute_job = functions.https.onRequest((req, res) => {
             var currentTime = moment().tz("America/New_York");
             if(dueMoment.isSame(currentTime,"minute")){
               console.log("Same Time");
-              sendNotification(token);
+              //var cleanedTitle = unescape(task);
+              var taskTitle = task.match(/.+?(?=(\\n)|(\W\d{1,2}\/\d{2}\/\d{4})|($))/);
+              var notificationMessage = String(taskTitle[0]) + " is due soon.";
+              console.log("Sending notification: " + notificationMessage);
+              sendNotification(token,notificationMessage);
             }
         }
       }
@@ -51,7 +59,7 @@ exports.minute_job = functions.https.onRequest((req, res) => {
   });
   res.send("Check completed");
   return;
-  function sendNotification(receivedToken){
+  function sendNotification(receivedToken,message){
     if(receivedToken!=null && receivedToken!=undefined){
       console.log('Sending notification');
       console.log(receivedToken);
@@ -60,8 +68,7 @@ exports.minute_job = functions.https.onRequest((req, res) => {
       };
       const payload = {
       data: {
-        title: 'Task Is Due Soon',
-        body: 'You have a reminder'
+        body: message
       }
     };
     console.log("receivedToken: " + receivedToken);
